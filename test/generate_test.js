@@ -22,4 +22,11 @@ suite('GenerateTest', function(){
     assert.equal(testData.token, token);
   })
 
+  test("works as new object", function(){
+    var message = testData.src;
+    var f = new fernet({secret: testData.secret, iv: testData.iv})
+    var token = f.token(message, Date.parse(testData.now));
+    assert.equal(testData.token, token);
+  })
+
 })

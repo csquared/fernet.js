@@ -85,9 +85,13 @@ var fernet = function fernet(opts){
   }
 
   this.token = function token(message, time){
+    if(!this.iv) this.setIV(opts.iv);
+    if(!this.encryptionKey) throw("Secret not set-- missing encryption key");
+    if(!this.signingKey)    throw("Secret not set-- missing signing key");
     var cipherText = this.encryptMessage(message, this.encryptionKey, this.iv);
     var now = this.timeBytes(time);
-    return this.createToken(this.signingKey, now, this.iv, cipherText)
+    var token = this.createToken(this.signingKey, now, this.iv, cipherText)
+    return token;
   }
 }
 
