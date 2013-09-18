@@ -17,18 +17,38 @@ var fernet = function fernet(opts){
     return str;
   }
 
+  this.Hex = Hex;
+
   //Makes a Base64 string a url-safe base64 string
   var urlsafe = function urlsafe(string){
     return string.replace(/\+/g, '-').replace(/\//g, '_') //.replace(/=+$/, '')
   }
 
+  var parseHex = function parseHex(hexString){
+    return parseInt('0x' + hexString);
+  }
+
+  var hexBits = function hexBits(bits){
+    return bits / 8 * 2;
+  }
+
   //Sets the secret from base64 encoded value
   this.setSecret = function setSecret(secret64){
-    var s = URLBase64.decode(secret64.replace(/=+$/, ''));
-    var secret = (new Buffer(s)).toString('hex');
-    this.signingKey = Hex.parse(secret.slice(0,32));
-    this.encryptionKey = Hex.parse(secret.slice(32));
-    return secret;
+    this.secret = new this.Secret(secret64);
+    return this.secret;
+  }
+
+  var decode64toHex = function decode64(string){
+    var s = URLBase64.decode(string.replace(/=+$/, ''));
+    return (new Buffer(s)).toString('hex');
+  }
+
+  this.Secret = function(secret64){
+    var secret = decode64toHex(secret64);
+    this.signingKeyHex = secret.slice(0,hexBits(128));
+    this.signingKey = Hex.parse(this.signingKeyHex);
+    this.encryptionKeyHex = secret.slice(hexBits(128));
+    this.encryptionKey = Hex.parse(this.encryptionKeyHex);
   }
 
   this.setIV = function setIV(iv_array){
@@ -55,7 +75,17 @@ var fernet = function fernet(opts){
   this.encryptMessage = function(message, encryptionKey, iv){
     var encrypted = AES.encrypt(message, encryptionKey, {iv: iv});
     return encrypted.ciphertext;
-    return 'foo'
+  }
+
+  this.decryptMessage = function(cipherText, encryptionKey, iv){
+    var encrypted = {};
+    encrypted.key=encryptionKey;
+    encrypted.iv=iv;
+    encrypted.ciphertext = cipherText;
+
+    var decrypted = AES.decrypt(encrypted, encryptionKey, {iv: iv});
+
+    return decrypted.toString(Utf8);
   }
 
   this.timeBytes = function timeBytes(time){
@@ -87,27 +117,35 @@ var fernet = function fernet(opts){
   }
 
   this.token = function token(message, time){
-    var cipherText = this.encryptMessage(message, this.encryptionKey, this.iv);
+    if(!this.iv) this.setIV(opts.iv);
+    if(!this.secret) throw("Secret not set");
+    var cipherText = this.encryptMessage(message,
+        this.secret.encryptionKey, this.iv);
     var now = this.timeBytes(time);
-    return this.createToken(this.signingKey, now, this.iv, cipherText)
+    var token = this.createToken(this.secret.signingKey,
+        now, this.iv, cipherText)
+    return token;
+  }
+
+  this.decode = function(token){
+    var t = {}
+    var tokenString = decode64toHex(token);
+    var versionOffset = hexBits(8);
+    var timeOffset    = versionOffset + hexBits(64);
+    var ivOffset      = timeOffset + hexBits(128);
+    var hmacOffset = tokenString.length - hexBits(256);
+    t.version   = parseHex(tokenString.slice(0,versionOffset));
+    var timeInt = parseHex(tokenString.slice(versionOffset, timeOffset));
+    t.time      = new Date(timeInt * 1000);
+    t.iv        = tokenString.slice(timeOffset, ivOffset);
+    t.cipherText = tokenString.slice(ivOffset, hmacOffset);
+    t.message    = this.decryptMessage(Hex.parse(t.cipherText), this.secret.encryptionKey, Hex.parse(t.iv))
+    t.hmacHex    = tokenString.slice(hmacOffset);
+    var computedHmac = this.createHmac(this.secret.signingKey, this.timeBytes(t.time), Hex.parse(t.iv), Hex.parse(t.cipherText));
+    t.computedHmacHex = computedHmac.toString(Hex);
+    return t;
   }
 }
-
-var test = {
-  "token": "gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==",
-  "now": "1985-10-26T01:20:00-07:00",
-  "iv": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-  "src": "hello",
-  "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
-}
-
-var f = new fernet({secret: test.secret, iv: test.iv});
-
-var message = test.src;
-var token2 = f.token(message, Date.parse(test.now));
-
-console.log(token2);
-console.log(test.token);
 
 exports = module.exports = fernet;
 fernet.call(exports)

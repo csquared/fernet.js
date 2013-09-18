@@ -12,7 +12,7 @@ var testData = {
   "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
 }
 
-suite('GenerateTest', function(){
+suite('Generate a Token', function(){
 
   test('token matches', function(){
     var message = testData.src;
