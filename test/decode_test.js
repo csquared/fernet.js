@@ -12,39 +12,70 @@ var testData = {
   "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
 }
 
-suite('Decode a Token', function(){
+suite('fernet.Token.prototype.decode', function(){
+  var secret = new fernet.Secret(testData.secret);
+
+  test("decode()", function(){
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token
+    })
+
+    assert.equal("hello", token.decode())
+    assert.equal("hello", token.toString())
+  })
+
+  test("decode(token)", function(){
+    var token = new fernet.Token({secret: secret})
+    assert.equal("hello", token.decode(testData.token))
+    assert.equal("hello", token.toString())
+  })
+
+  test("decode(token) with top-level secret", function(){
+    var f = new fernet({secret: testData.secret})
+    var token = new f.Token()
+    assert.equal("hello", token.decode(testData.token))
+    assert.equal("hello", token.toString())
+  })
+
   test('recovers version', function(){
-    var f = new fernet({secret: testData.secret});
-    var token = f.decode(testData.token);
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token,
+      version: 1
+    })
+    assert.equal(token.version, 1);
+    token.decode();
     assert.equal(token.version, 128);
   })
 
   test('recovers time', function(){
-    var f = new fernet({secret: testData.secret});
-    var token = f.decode(testData.token);
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token
+    })
+    token.decode();
     var now = new Date(Date.parse(testData.now));
     assert.equal(token.time.toUTCString(), now.toUTCString());
   })
 
   test('recovers iv', function(){
-    var f = new fernet({secret: testData.secret});
-    var ivHex = f.setIV(testData.iv);
-    var token = f.decode(testData.token);
-    assert.equal(token.iv, ivHex);
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token
+    })
+    token.decode();
+    var ivHex = fernet.ArrayToHex(testData.iv);
+    assert.equal(token.ivHex, ivHex);
   })
 
-  test('recovers message', function(){
-    var f = new fernet({secret: testData.secret});
-    var token = f.decode(testData.token);
-    var message = testData.src;
-    assert.equal(token.message, message);
-  })
-
-  test('checks hmac', function(){
-    var f = new fernet({secret: testData.secret});
-    var t = f.decode(testData.token);
-    var computedHmac = f.createHmac(f.secret.signingKey, f.timeBytes(t.time), f.Hex.parse(t.iv), f.Hex.parse(t.cipherText));
-    assert.equal(t.hmacHex, computedHmac.toString(f.Hex));
+  test('recovers hmac', function(){
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token
+    })
+    token.decode();
+    var computedHmac = fernet.createHmac(secret.signingKey, token.time, token.iv, token.cipherText);
+    assert.equal(token.hmacHex, computedHmac.toString(fernet.Hex));
   })
 })
-

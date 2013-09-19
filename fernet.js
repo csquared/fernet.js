@@ -33,7 +33,6 @@ String.prototype.lpad = function(padString, length) {
 }
 
 var fernet = function fernet(opts){
-
   this.Hex = Hex;
 
   //Sets the secret from base64 encoded value
@@ -50,20 +49,25 @@ var fernet = function fernet(opts){
     this.encryptionKey = Hex.parse(this.encryptionKeyHex);
   }
 
+  var ArrayToHex = function ArrayToHex(array){
+    hex = '';
+    for( var _byte in array){
+      hex += Number(_byte).toString(16).lpad('0',2);
+    }
+    return hex;
+  }
+  this.ArrayToHex = ArrayToHex;
+
   var setIV = function setIV(iv_array){
-    var ivHex = '';
     if(iv_array){
-      for( var _byte in iv_array){
-        ivHex += Number(_byte).toString(16).lpad('0',2);
-      }
-      this.iv = Hex.parse(ivHex);
+      this.ivHex = ArrayToHex(iv_array);
+      this.iv = Hex.parse(this.ivHex);
     }else{
       this.iv = CryptoJS.lib.WordArray.random(128/8);
-      ivHex = this.iv.toString(Hex);
+      this.ivHex = this.iv.toString(Hex);
     }
-    return ivHex;
+    return this.ivHex;
   }
-
   this.setIV = setIV;
 
   opts = opts || {};
@@ -119,6 +123,7 @@ var fernet = function fernet(opts){
     return HmacSHA256(hmacWords, signingKey);
   }
 
+  /*
   this.token = function token(message, time){
     if(!this.iv) this.setIV(opts.iv);
     if(!this.secret) throw("Secret not set");
@@ -129,14 +134,17 @@ var fernet = function fernet(opts){
         now, this.iv, cipherText)
     return token;
   }
+  */
 
   var self = this;
   this.Token = function Token(opts){
     opts = opts || {};
-    this.secret = opts.secret || self.secret;
-    this.message = opts.message;
+    this.secret     = opts.secret || self.secret;
+    this.message    = opts.message;
     this.cipherText = opts.cipherText;
-    this.setIV(opts.iv);
+    this.token      = opts.token;
+    this.version    = opts.version || parseHex(self.versionHex);
+    this.optsIV     = opts.iv;
     if(opts.time) this.setTime(Date.parse(opts.time));
   }
 
@@ -146,34 +154,50 @@ var fernet = function fernet(opts){
       this.time = timeBytes(time);
     },
     toString: function(){
-      if(this.encrypted){
+      if(this.encoded){
         return this.token
       }else{
         return this.message
       }
     },
-    encrypt: function(message){
-      this.encrypted = true;
-      if(!this.iv) this.setIV(opts.iv);
+    encode: function(message){
+      this.encoded = true;
       if(!this.secret) throw("Secret not set");
+      this.setIV(this.optsIV);  //if null will always be a fresh IV
       this.message = message || this.message;
-      this.cipherText = self.encryptMessage(this.message,
-          this.secret.encryptionKey, this.iv);
-      this.token = self.createToken(this.secret.signingKey,
-          this.time, this.iv, this.cipherText)
-      return this;
+      this.cipherText = self.encryptMessage(this.message, this.secret.encryptionKey, this.iv);
+      this.token = self.createToken(this.secret.signingKey,this.time, this.iv, this.cipherText)
+      return this.token;
     },
-    decrypt: function(message){
-      this.encrypted = false;
-      this.message = message || this.message;
-      this.message   = self.decryptMessage(Hex.parse(this.cipherText),
-          this.secret.encryptionKey, Hex.parse(this.iv))
-      return this;
+
+    decode: function(token){
+      this.encoded = false;
+      this.token = token || this.token;
+
+      var tokenString   = decode64toHex(this.token);
+      var versionOffset = hexBits(8);
+      var timeOffset    = versionOffset + hexBits(64);
+      var ivOffset      = timeOffset + hexBits(128);
+      var hmacOffset    = tokenString.length - hexBits(256);
+      var timeInt       = parseHex(tokenString.slice(versionOffset, timeOffset));
+
+      this.version  = parseHex(tokenString.slice(0,versionOffset));
+      this.time     = new Date(timeInt * 1000);
+      this.ivHex    = tokenString.slice(timeOffset, ivOffset);
+      this.iv       = Hex.parse(this.ivHex);
+      this.cipherTextHex = tokenString.slice(ivOffset, hmacOffset);
+      this.cipherText = Hex.parse(this.cipherTextHex);
+      this.hmacHex    = tokenString.slice(hmacOffset);
+
+      //var computedHmac = self.createHmac(this.secret.signingKey, this.time, this.iv, this.cipherText);
+      this.message   = self.decryptMessage(this.cipherText, this.secret.encryptionKey, this.iv)
+      return this.message;
     }
   }
 
 }
 
+/*
 fernet.prototype = {
   decode: function(token){
     var t = {}
@@ -194,6 +218,7 @@ fernet.prototype = {
     return t;
   }
 }
+*/
 
 exports = module.exports = fernet;
 fernet.call(exports)
