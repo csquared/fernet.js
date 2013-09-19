@@ -7,38 +7,39 @@ var Base64 = require('crypto-js/enc-base64');
 var HmacSHA256 = require('crypto-js/hmac-sha256');
 var URLBase64 = require('urlsafe-base64');
 
+//Makes a Base64 string a url-safe base64 string
+var urlsafe = function urlsafe(string){
+  return string.replace(/\+/g, '-').replace(/\//g, '_') //.replace(/=+$/, '')
+}
+
+var parseHex = function parseHex(hexString){
+  return parseInt('0x' + hexString);
+}
+
+var hexBits = function hexBits(bits){
+  return bits / 8 * 2;
+}
+
+
+var decode64toHex = function decode64(string){
+  var s = URLBase64.decode(string.replace(/=+$/, ''));
+  return (new Buffer(s)).toString('hex');
+}
+
+String.prototype.lpad = function(padString, length) {
+  var str = this;
+  while (str.length < length) str = padString + str;
+  return str;
+}
+
 var fernet = function fernet(opts){
 
-  String.prototype.lpad = function(padString, length) {
-    var str = this;
-    while (str.length < length) str = padString + str;
-    return str;
-  }
-
   this.Hex = Hex;
-
-  //Makes a Base64 string a url-safe base64 string
-  var urlsafe = function urlsafe(string){
-    return string.replace(/\+/g, '-').replace(/\//g, '_') //.replace(/=+$/, '')
-  }
-
-  var parseHex = function parseHex(hexString){
-    return parseInt('0x' + hexString);
-  }
-
-  var hexBits = function hexBits(bits){
-    return bits / 8 * 2;
-  }
 
   //Sets the secret from base64 encoded value
   this.setSecret = function setSecret(secret64){
     this.secret = new this.Secret(secret64);
     return this.secret;
-  }
-
-  var decode64toHex = function decode64(string){
-    var s = URLBase64.decode(string.replace(/=+$/, ''));
-    return (new Buffer(s)).toString('hex');
   }
 
   this.Secret = function(secret64){
@@ -49,7 +50,7 @@ var fernet = function fernet(opts){
     this.encryptionKey = Hex.parse(this.encryptionKeyHex);
   }
 
-  this.setIV = function setIV(iv_array){
+  var setIV = function setIV(iv_array){
     var ivHex = '';
     if(iv_array){
       for( var _byte in iv_array){
@@ -62,6 +63,8 @@ var fernet = function fernet(opts){
     }
     return ivHex;
   }
+
+  this.setIV = setIV;
 
   opts = opts || {};
   this.ttl = opts.ttl || 60;
@@ -86,7 +89,7 @@ var fernet = function fernet(opts){
     return decrypted.toString(Utf8);
   }
 
-  this.timeBytes = function timeBytes(time){
+  var timeBytes = function timeBytes(time){
     if(time){
       time = (time / 1000)
     }else{
@@ -95,6 +98,8 @@ var fernet = function fernet(opts){
     var hexTime = time.toString(16).lpad('0', '16')
     return Hex.parse(hexTime);
   }
+
+  this.timeBytes = timeBytes;
 
   this.createToken = function(signingKey, time, iv, cipherText){
     var hmac = this.createHmac(signingKey, time, iv, cipherText);
@@ -125,7 +130,52 @@ var fernet = function fernet(opts){
     return token;
   }
 
-  this.decode = function(token){
+  var self = this;
+  this.Token = function Token(opts){
+    opts = opts || {};
+    this.secret = opts.secret || self.secret;
+    this.message = opts.message;
+    this.cipherText = opts.cipherText;
+    this.setIV(opts.iv);
+    if(opts.time) this.setTime(Date.parse(opts.time));
+  }
+
+  this.Token.prototype = {
+    setIV: setIV,
+    setTime: function(time){
+      this.time = timeBytes(time);
+    },
+    toString: function(){
+      if(this.encrypted){
+        return this.token
+      }else{
+        return this.message
+      }
+    },
+    encrypt: function(message){
+      this.encrypted = true;
+      if(!this.iv) this.setIV(opts.iv);
+      if(!this.secret) throw("Secret not set");
+      this.message = message || this.message;
+      this.cipherText = self.encryptMessage(this.message,
+          this.secret.encryptionKey, this.iv);
+      this.token = self.createToken(this.secret.signingKey,
+          this.time, this.iv, this.cipherText)
+      return this;
+    },
+    decrypt: function(message){
+      this.encrypted = false;
+      this.message = message || this.message;
+      this.message   = self.decryptMessage(Hex.parse(this.cipherText),
+          this.secret.encryptionKey, Hex.parse(this.iv))
+      return this;
+    }
+  }
+
+}
+
+fernet.prototype = {
+  decode: function(token){
     var t = {}
     var tokenString = decode64toHex(token);
     var versionOffset = hexBits(8);

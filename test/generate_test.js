@@ -12,7 +12,7 @@ var testData = {
   "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
 }
 
-suite('Generate a Token', function(){
+suite('fernet.token', function(){
 
   test('token matches', function(){
     var message = testData.src;
@@ -27,6 +27,34 @@ suite('Generate a Token', function(){
     var f = new fernet({secret: testData.secret, iv: testData.iv})
     var token = f.token(message, Date.parse(testData.now));
     assert.equal(testData.token, token);
+  })
+
+})
+
+suite('fernet.Token', function(){
+  test("encrypt(message)", function(){
+    var message = testData.src;
+    var secret = new fernet.Secret(testData.secret);
+    var token = new fernet.Token({
+      secret: secret,
+      iv: testData.iv,
+      time: testData.now
+    })
+    token.encrypt(message);
+    assert.equal(testData.token, token.toString());
+  })
+
+  test("encrypt(null)", function(){
+    var secret = new fernet.Secret(testData.secret);
+    var token = new fernet.Token({
+      secret: secret,
+      iv: testData.iv,
+      time: testData.now,
+      message: testData.src
+    })
+    token.encrypt();
+    assert.equal(testData.token, token.toString());
+    //assert.equal(testData.token, token.encrypt().toString());
   })
 
 })
