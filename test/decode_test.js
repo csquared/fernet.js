@@ -75,7 +75,7 @@ suite('fernet.Token.prototype.decode', function(){
       token: testData.token
     })
     token.decode();
-    var computedHmac = fernet.createHmac(secret.signingKey, token.time, token.iv, token.cipherText);
+    var computedHmac = fernet.createHmac(secret.signingKey, fernet.timeBytes(token.time), token.iv, token.cipherText);
     assert.equal(token.hmacHex, computedHmac.toString(fernet.Hex));
   })
 })
