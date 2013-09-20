@@ -52,4 +52,9 @@ token.encode("Message")
 ``
 
 
+## Test
 
+    > npm test
+
+Compiles new fernetBrowser.js via `browserify`,
+tests node lib with `mocha`, then opens test.html via `open`.
