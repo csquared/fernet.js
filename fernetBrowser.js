@@ -120,12 +120,13 @@ var fernet = function fernet(opts){
     return HmacSHA256(hmacWords, signingKey);
   }
 
-  this.Secret = require('./lib/secret')
-  this.Token = require('./lib/token');
-  this.Token.parent = this;
+  this.Secret = require('./lib/secret');
+  this.Token  = require('./lib/token')(this);
 
   opts = opts || {};
   this.ttl = opts.ttl || 60;
+  // because (0 || x) always equals x
+  if(opts.ttl === 0) this.ttl = 0;
   this.versionHex = '80';
   this.setIV(opts.iv);
   if(opts.secret){ this.setSecret(opts.secret) }
@@ -139,10 +140,10 @@ var f = require('../fernet');
 
 var Secret = function(secret64){
   var secret = f.decode64toHex(secret64);
-  this.signingKeyHex = secret.slice(0,f.hexBits(128));
-  this.signingKey = f.Hex.parse(this.signingKeyHex);
+  this.signingKeyHex    = secret.slice(0,f.hexBits(128));
+  this.signingKey       = f.Hex.parse(this.signingKeyHex);
   this.encryptionKeyHex = secret.slice(f.hexBits(128));
-  this.encryptionKey = f.Hex.parse(this.encryptionKeyHex);
+  this.encryptionKey    = f.Hex.parse(this.encryptionKeyHex);
 }
 
 exports = module.exports = Secret;
@@ -150,9 +151,13 @@ exports = module.exports = Secret;
 },{"../fernet":1}],3:[function(require,module,exports){
 var fernet = require('../fernet');
 
+//TokenFoctory
+module = module.exports = function(parent){
+
 var Token = function Token(opts){
   opts = opts || {};
-  this.secret     = opts.secret || Token.parent.secret;
+  this.secret     = opts.secret || parent.secret;
+  this.ttl        = opts.ttl    || parent.ttl;
   this.message    = opts.message;
   this.cipherText = opts.cipherText;
   this.token      = opts.token;
@@ -163,17 +168,17 @@ var Token = function Token(opts){
 
 Token.prototype = {
   setIV: fernet.setIV,
-  setTime: function(time){
+  setTime: function tokenSetTime(time){
     this.time = fernet.timeBytes(time);
   },
-  toString: function(){
+  toString: function tokenToString(){
     if(this.encoded){
       return this.token
     }else{
       return this.message
     }
   },
-  encode: function(message){
+  encode: function encodeToken(message){
     if(!this.secret) throw(new Error("Secret not set"));
     this.encoded = true;
     this.setIV(this.optsIV);  //if null will always be a fresh IV
@@ -182,7 +187,7 @@ Token.prototype = {
     this.token = fernet.createToken(this.secret.signingKey,this.time, this.iv, this.cipherText)
     return this.token;
   },
-  decode: function(token){
+  decode: function decodeToken(token){
     if(!this.secret) throw(new Error("Secret not set"));
     this.encoded = false;
     this.token = token || this.token;
@@ -196,19 +201,32 @@ Token.prototype = {
 
     this.version  = fernet.parseHex(tokenString.slice(0,versionOffset));
     this.time     = new Date(timeInt * 1000);
+
+    var timeDiff = ((new Date()) - this.time) / 1000;
+
+    if(this.ttl > 0 && timeDiff > this.ttl) {
+      throw new Error("Invalid Token: TTL");
+    }
     this.ivHex    = tokenString.slice(timeOffset, ivOffset);
     this.iv       = fernet.Hex.parse(this.ivHex);
     this.cipherTextHex = tokenString.slice(ivOffset, hmacOffset);
     this.cipherText = fernet.Hex.parse(this.cipherTextHex);
     this.hmacHex    = tokenString.slice(hmacOffset);
-
-    var computedHmac = fernet.createHmac(this.secret.signingKey, fernet.timeBytes(this.time), this.iv, this.cipherText);
+    var decodedHmac = fernet.createHmac(this.secret.signingKey, fernet.timeBytes(this.time), this.iv, this.cipherText);
+    if(decodedHmac != this.hmacHex) {
+      throw new Error("Invalid Token: HMAC");
+    }
     this.message     = fernet.decryptMessage(this.cipherText, this.secret.encryptionKey, this.iv)
     return this.message;
   }
 }
 
-exports = module.exports = Token;
+return Token;
+}
+
+//exports = module.exports = Token;
+
+
 
 },{"../fernet":1}],4:[function(require,module,exports){
 require=(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){

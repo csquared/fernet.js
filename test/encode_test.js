@@ -33,7 +33,7 @@ suite('fernet.Token.prototype.encode', function(){
     assert.equal(testData.token, token.toString());
   })
 
-  test("encode()", function(){
+  test("token.encode() makes token.toString() return the token", function(){
     var token = new fernet.Token({
       secret: secret,
       iv: testData.iv,
@@ -44,23 +44,23 @@ suite('fernet.Token.prototype.encode', function(){
     assert.equal(testData.token, token.toString());
   })
 
-  test("encode() returns Token", function(){
+  test("encode() returns the token as a String", function(){
     var token = new fernet.Token({
       secret: secret,
       iv: testData.iv,
       time: testData.now
     })
-    assert.equal(token.encode(testData.src).toString(), testData.token);
+    assert.equal(token.encode(testData.src), testData.token);
   })
 
-  test("randomly generates IV", function(){
+  test("randomly generates IV if one is not passed in", function(){
     var token = new fernet.Token({
       secret: secret,
       time: testData.now
     })
-    var tokenString = token.encode(testData.src).toString();
+    var tokenString = token.encode(testData.src);
     assert.notEqual(tokenString, testData.token);
-    var tokenString2 = token.encode(testData.src).toString();
+    var tokenString2 = token.encode(testData.src);
     assert.notEqual(tokenString, tokenString2);
   })
 })

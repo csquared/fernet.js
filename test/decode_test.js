@@ -14,6 +14,7 @@ var testData = {
 
 suite('fernet.Token.prototype.decode', function(){
   var secret = new fernet.Secret(testData.secret);
+  fernet.ttl = 0;
 
   test("decode()", function(){
     var token = new fernet.Token({
@@ -32,7 +33,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test("decode(token) with top-level secret", function(){
-    var f = new fernet({secret: testData.secret})
+    var f = new fernet({secret: testData.secret, ttl: 0})
     var token = new f.Token()
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
@@ -77,5 +78,44 @@ suite('fernet.Token.prototype.decode', function(){
     token.decode();
     var computedHmac = fernet.createHmac(secret.signingKey, fernet.timeBytes(token.time), token.iv, token.cipherText);
     assert.equal(token.hmacHex, computedHmac.toString(fernet.Hex));
+  })
+
+  test('raises new Error("Invalid Token: TTL") on invalid ttl', function(){
+    var token = new fernet.Token({
+      secret: secret,
+      token: testData.token,
+      ttl: 1
+    })
+
+    assert.throws(function(){
+      token.decode();
+    }, Error, 'Invalid Token: TTL');
+  })
+
+  test('inherits parent URL', function(){
+    var f     = new fernet({ttl: 1});
+    var token = new f.Token({
+      secret: secret,
+      token: testData.token,
+    })
+
+    assert.throws(function(){
+      token.decode();
+    }, Error, 'Invalid Token: TTL');
+  })
+
+  test('raises new Error("Invalid Token: HMAC") on wrong Hmac', function(){
+    var s = testData.token;
+    var i = s.length - 5;
+    var mutation = String.fromCharCode(s.charCodeAt(i) + 1);
+    var dirtyHmacString = s.slice(0,i) + mutation + s.slice(i+1);
+    var token = new fernet.Token({
+      secret: secret,
+      token: dirtyHmacString
+    })
+
+    assert.throws(function(){
+      token.decode();
+    }, Error, 'Invalid Token: HMAC');
   })
 })

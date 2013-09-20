@@ -118,12 +118,13 @@ var fernet = function fernet(opts){
     return HmacSHA256(hmacWords, signingKey);
   }
 
-  this.Secret = require('./lib/secret')
-  this.Token = require('./lib/token');
-  this.Token.parent = this;
+  this.Secret = require('./lib/secret');
+  this.Token  = require('./lib/token')(this);
 
   opts = opts || {};
   this.ttl = opts.ttl || 60;
+  // because (0 || x) always equals x
+  if(opts.ttl === 0) this.ttl = 0;
   this.versionHex = '80';
   this.setIV(opts.iv);
   if(opts.secret){ this.setSecret(opts.secret) }
