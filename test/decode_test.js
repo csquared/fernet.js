@@ -13,11 +13,11 @@ var testData = {
 }
 
 suite('fernet.Token.prototype.decode', function(){
-  var secret = new fernet.Secret(testData.secret);
-  fernet.ttl = 0;
+  var _fernet = new fernet({ttl: 0})
+  var secret  = new fernet.Secret(testData.secret);
 
   test("decode()", function(){
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -27,7 +27,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test("decode(token)", function(){
-    var token = new fernet.Token({secret: secret})
+    var token = new _fernet.Token({secret: secret})
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
   })
@@ -40,7 +40,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers version', function(){
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: testData.token,
       version: 1
@@ -51,7 +51,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers time', function(){
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -61,7 +61,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers iv', function(){
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -71,7 +71,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers hmac', function(){
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -92,7 +92,7 @@ suite('fernet.Token.prototype.decode', function(){
     }, Error, 'Invalid Token: TTL');
   })
 
-  test('inherits parent URL', function(){
+  test('inherits parent TTL', function(){
     var f     = new fernet({ttl: 1});
     var token = new f.Token({
       secret: secret,
@@ -109,7 +109,7 @@ suite('fernet.Token.prototype.decode', function(){
     var i = s.length - 5;
     var mutation = String.fromCharCode(s.charCodeAt(i) + 1);
     var dirtyHmacString = s.slice(0,i) + mutation + s.slice(i+1);
-    var token = new fernet.Token({
+    var token = new _fernet.Token({
       secret: secret,
       token: dirtyHmacString
     })
