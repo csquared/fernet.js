@@ -71,9 +71,11 @@ var timeBytes = function timeBytes(time){
 
 var fernet = function fernet(opts){
   this.Hex = Hex;
+  this.Base64 = Base64;
   this.parseHex = parseHex;
   this.decode64toHex = decode64toHex;
   this.hexBits = hexBits;
+  this.urlsafe = urlsafe;
 
   //Sets the secret from base64 encoded value
   this.setSecret = function setSecret(secret64){
@@ -199,6 +201,11 @@ module = module.exports = function(parent){
       var timeInt       = fernet.parseHex(tokenString.slice(versionOffset, timeOffset));
 
       this.version  = fernet.parseHex(tokenString.slice(0,versionOffset));
+
+      if(this.version != 128){
+        throw new Error("Invalid version");
+      }
+
       this.time     = new Date(timeInt * 1000);
 
       var timeDiff = ((new Date()) - this.time) / 1000;
