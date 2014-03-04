@@ -12,9 +12,11 @@ Instead of using TypedArrays I use Hex Strings and CryptoJS's `Hex.parse`
 to build up `CryptoJs.lib.WordArray` objects.  The Stanford Javscript Crypto
 Library is used for pseudo-random number generation.
 
-WARNING: It's generally *never* considered safe to encrypt data in the browser.
+## WARNING
 
-You can use this library to encrypt/decrypt data server-side and decrypt data on a client.
+[It's generally *never* considered safe to encrypt data in the browser.](http://www.matasano.com/articles/javascript-cryptography/)
+
+However, you can use this library to encrypt/decrypt data server-side and decrypt data on a client.
 
 ## Use
 
