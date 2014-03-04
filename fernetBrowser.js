@@ -212,9 +212,14 @@ module = module.exports = function(parent){
       this.cipherText = fernet.Hex.parse(this.cipherTextHex);
       this.hmacHex    = tokenString.slice(hmacOffset);
       var decodedHmac = fernet.createHmac(this.secret.signingKey, fernet.timeBytes(this.time), this.iv, this.cipherText);
-      if(decodedHmac != this.hmacHex) {
-        throw new Error("Invalid Token: HMAC");
+      var decodedHmacHex = decodedHmac.toString(fernet.Hex);
+
+      for(var i=0;i<64;i++){
+        if(decodedHmacHex[i] !== this.hmacHex[i]){
+          throw new Error("Invalid Token: HMAC");
+        }
       }
+
       this.message     = fernet.decryptMessage(this.cipherText, this.secret.encryptionKey, this.iv)
       return this.message;
     }
