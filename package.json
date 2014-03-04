@@ -17,8 +17,7 @@
   "license": "BSD",
   "dependencies": {
     "crypto-js": "~3.1.2-1",
-    "urlsafe-base64": "0.0.2",
-    "sjcl": "~1.0.0"
+    "urlsafe-base64": "0.0.2"
   },
   "devDependencies": {
     "browserify": "~2.29.1",
