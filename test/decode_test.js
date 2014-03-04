@@ -80,6 +80,18 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal(token.hmacHex, computedHmac.toString(fernet.Hex));
   })
 
+  test('inherits parent TTL', function(){
+    var f     = new fernet({ttl: 1});
+    var token = new f.Token({
+      secret: secret,
+      token: testData.token,
+    })
+
+    assert.throws(function(){
+      token.decode();
+    }, Error, 'Invalid Token: TTL');
+  })
+
   test('raises new Error("Invalid Token: TTL") on invalid ttl', function(){
     var token = new fernet.Token({
       secret: secret,
@@ -92,16 +104,17 @@ suite('fernet.Token.prototype.decode', function(){
     }, Error, 'Invalid Token: TTL');
   })
 
-  test('inherits parent TTL', function(){
-    var f     = new fernet({ttl: 1});
-    var token = new f.Token({
-      secret: secret,
-      token: testData.token,
-    })
+  test('raises new Error("Invalid version") on wrong version byte', function(){
+    var tokenHex = fernet.decode64toHex(testData.token);
+    var versionOffset = fernet.hexBits(8);
+    var dirtyToken = '01' + tokenHex.slice(versionOffset);
+    var tokenWords = fernet.Hex.parse(dirtyToken);
+    var token = fernet.urlsafe(tokenWords.toString(fernet.Base64));
+    var t = new _fernet.Token({secret: secret})
 
     assert.throws(function(){
-      token.decode();
-    }, Error, 'Invalid Token: TTL');
+      t.decode(token);
+    }, Error, 'Invalid version');
   })
 
   test('raises new Error("Invalid Token: HMAC") on wrong Hmac', function(){

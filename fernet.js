@@ -69,9 +69,11 @@ var timeBytes = function timeBytes(time){
 
 var fernet = function fernet(opts){
   this.Hex = Hex;
+  this.Base64 = Base64;
   this.parseHex = parseHex;
   this.decode64toHex = decode64toHex;
   this.hexBits = hexBits;
+  this.urlsafe = urlsafe;
 
   //Sets the secret from base64 encoded value
   this.setSecret = function setSecret(secret64){
