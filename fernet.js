@@ -6,6 +6,7 @@ var Hex = require('crypto-js/enc-hex');
 var Base64 = require('crypto-js/enc-base64');
 var HmacSHA256 = require('crypto-js/hmac-sha256');
 var URLBase64 = require('urlsafe-base64');
+var sjcl = require('sjcl');
 
 //lpad a string for some hex conversions
 String.prototype.lpad = function(padString, length) {
@@ -44,14 +45,19 @@ var ArrayToHex = function ArrayToHex(array){
   return hex;
 }
 
+var randomHex = function(size){
+  var prng = new sjcl.prng(0);
+  var words = prng.randomWords(128/8);
+  return sjcl.codec.hex.fromBits(words);
+}
+
 var setIV = function setIV(iv_array){
   if(iv_array){
     this.ivHex = ArrayToHex(iv_array);
-    this.iv = Hex.parse(this.ivHex);
   }else{
-    this.iv = CryptoJS.lib.WordArray.random(128/8);
-    this.ivHex = this.iv.toString(Hex);
+    this.ivHex = randomHex(128/8);
   }
+  this.iv = Hex.parse(this.ivHex);
   return this.ivHex;
 }
 

@@ -4,7 +4,7 @@
   "description": "Javascript implementation of Fernet symmetric encryption https://github.com/kr/fernet-spec",
   "main": "fernet.js",
   "scripts": {
-    "pretest" : "browserify -s fernet fernet.js > fernetBrowser.js",
+    "pretest": "browserify -s fernet fernet.js > fernetBrowser.js",
     "test": "mocha",
     "posttest": "open test.html"
   },
@@ -17,12 +17,13 @@
   "license": "BSD",
   "dependencies": {
     "crypto-js": "~3.1.2-1",
-    "urlsafe-base64": "0.0.2"
+    "urlsafe-base64": "0.0.2",
+    "sjcl": "~1.0.0"
   },
-  "devDependencies" : {
+  "devDependencies": {
     "browserify": "~2.29.1",
     "buffer-browserify": "~0.2.2",
-    "mocha" : "*",
-    "chai" : "*"
+    "mocha": "*",
+    "chai": "*"
   }
 }
