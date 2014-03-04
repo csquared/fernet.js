@@ -5,11 +5,16 @@ Javascript implementation of <a href="https://github.com/kr/fernet-spec">Fernet 
 Fernet is an opinionated way of using AES and HMAC authentication that makes
 shared-secret symmetric encryption simpler for communicating applications.
 
-Fernet.js combines Crypto-JS and browserify to provide a library that works
+Fernet.js combines Crypto-JS, sjcl, and browserify to provide a library that works
 in both node and the browser.
 
 Instead of using TypedArrays I use Hex Strings and CryptoJS's `Hex.parse`
-to build up `CryptoJs.lib.WordArray` objects.
+to build up `CryptoJs.lib.WordArray` objects.  The Stanford Javscript Crypto
+Library is used for pseudo-random number generation.
+
+WARNING: It's generally *never* considered safe to encrypt data in the browser.
+
+You can use this library to encrypt/decrypt data server-side and decrypt data on a client.
 
 ## Use
 
