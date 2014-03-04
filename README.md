@@ -30,7 +30,6 @@ var fernet = require('./fernet');
 <script src="fernetBrowser.js"></script>
 ```
 
-
 ## Fernet
 
 ### fernet.setSecret(string)
@@ -44,6 +43,14 @@ Sets the `ttl` at the top level for all further Tokens made
 from this instance of Fernet.
 
 ## Secret
+
+### Generating a secret
+
+    Generating appropriate secrets is beyond the scope of `Fernet`, but you should
+    generate it using `/dev/random` in a *nix. To generate a base64-encoded 256 bit
+    (32 byte) random sequence, try:
+
+    dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64
 
 ### new fernet.Secret(string)
 
