@@ -1,6 +1,6 @@
 {
   "name": "fernet",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Javascript implementation of Fernet symmetric encryption https://github.com/kr/fernet-spec",
   "main": "fernet.js",
   "scripts": {
