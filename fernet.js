@@ -46,7 +46,12 @@ var ArrayToHex = function ArrayToHex(array){
 }
 
 var randomHex = function(size){
-  return crypto.randomBytes(128/8).toString('hex')
+  if(typeof(window) === 'undefined'){
+    return crypto.randomBytes(128/8).toString('hex')
+  }else{
+    var array = new Uint8Array(128/8);
+    return ArrayToHex(window.crypto.getRandomValues(array))
+  }
 }
 
 var setIV = function setIV(iv_array){
