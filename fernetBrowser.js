@@ -169,7 +169,7 @@ module = module.exports = function(parent){
     this.version    = opts.version || fernet.parseHex(parent.versionHex);
     this.optsIV     = opts.iv;
     if(opts.time) this.setTime(Date.parse(opts.time));
-    else this.setTime(Date.now());
+    else this.setTime();
   }
 
   Token.prototype = {
