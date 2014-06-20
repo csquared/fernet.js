@@ -65,19 +65,12 @@ suite('fernet.Token.prototype.encode', function(){
   })
 
   test('time defaults to Date.now()', function(){
-    var frozenNow = Date.now();
-    var oldNow = Date.now
-    Date.now = function(){
-      return frozenNow;
-    }
-
     var token = new fernet.Token({
       secret: secret
     })
-
-    token.encode('foo');
-    assert.deepEqual(fernet.timeBytes(frozenNow), token.time);
-    Date.now = oldNow;
+    var cipherText = token.encode('foo');
+    var recovered = token.decode(cipherText);
+    assert.equal(recovered, 'foo');
   })
 })
 
