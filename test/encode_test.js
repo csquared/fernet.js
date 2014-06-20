@@ -63,5 +63,21 @@ suite('fernet.Token.prototype.encode', function(){
     var tokenString2 = token.encode(testData.src);
     assert.notEqual(tokenString, tokenString2);
   })
+
+  test('time defaults to Date.now()', function(){
+    var frozenNow = Date.now();
+    var oldNow = Date.now
+    Date.now = function(){
+      return frozenNow;
+    }
+
+    var token = new fernet.Token({
+      secret: secret
+    })
+
+    token.encode('foo');
+    assert.deepEqual(fernet.timeBytes(frozenNow), token.time);
+    Date.now = oldNow;
+  })
 })
 
