@@ -5,18 +5,23 @@ Javascript implementation of <a href="https://github.com/kr/fernet-spec">Fernet 
 Fernet is an opinionated way of using AES and HMAC authentication that makes
 shared-secret symmetric encryption simpler for communicating applications.
 
-Fernet.js combines Crypto-JS, sjcl, and browserify to provide a library that works
+Fernet.js uses browserify to provide a library that works
 in both node and the browser.
 
 Instead of using TypedArrays I use Hex Strings and CryptoJS's `Hex.parse`
-to build up `CryptoJs.lib.WordArray` objects.  The Stanford Javscript Crypto
-Library is used for pseudo-random number generation.
+to build up `CryptoJs.lib.WordArray` objects.  
 
 ## WARNING
 
 [It's generally *never* considered safe to encrypt data in the browser.](http://www.matasano.com/articles/javascript-cryptography/)
 
 However, you can use this library to encrypt/decrypt data server-side and decrypt data on a client.
+
+That being said, the only randomness used by this library without your control is a call to `crypto.randomBytes` to generate IVs.
+This function defaults to OpenSSL server-side and [browserify's random number generator implementation](https://github.com/dominictarr/crypto-browserify/blob/master/rng.js) 
+client-side.  The browserify implementation only uses real browser crypto or throws an error. (IE: no calls to `Math.random()`)
+
+If you're planning on generating the secrets in the browser do yourself a favor and get an audit.
 
 ## Use
 
