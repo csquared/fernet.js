@@ -14,7 +14,7 @@
     "key"
   ],
   "author": "csquared",
-  "license": "BSD",
+  "license": "MIT",
   "dependencies": {
     "crypto-js": "~3.1.2-1",
     "urlsafe-base64": "0.0.2"
