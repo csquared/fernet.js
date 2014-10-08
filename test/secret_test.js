@@ -27,4 +27,11 @@ suite('fernet.Secret', function(){
     assert.deepEqual(secret.encryptionKey, fernet.Hex.parse(encryptionKeyHex));
   })
 
+  test('raises "new Error(\'Secret must be 32 url-safe base64-encoded bytes.\')" on wrong secret', function(){
+
+    assert.throws(function(){
+      new fernet.Secret('not a good secret');
+    }, Error, 'Secret must be 32 url-safe base64-encoded bytes.');
+  })
+
 })
