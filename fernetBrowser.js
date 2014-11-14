@@ -225,7 +225,6 @@ module = module.exports = function(parent){
         throw new Error("Invalid Token: TTL");
       }
 
-      console.log(currentTime / 1000, this.maxClockSkew, timeInt)
       if(((currentTime / 1000) + this.maxClockSkew) < timeInt){
         throw new Error("far-future timestamp");
       }
