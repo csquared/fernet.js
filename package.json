@@ -23,6 +23,8 @@
     "browserify": "~2.29.1",
     "buffer-browserify": "~0.2.2",
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "sinon": "*",
+    "sinon-chai": "*"
   }
 }

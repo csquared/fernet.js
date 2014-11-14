@@ -1,8 +1,11 @@
 //for browser compatibility
 if(!chai)   var chai = require('chai');
+if(!sinon)  var sinon = require("sinon");
+if(!sinonChai) var sinonChai = require("sinon-chai");
 if(!fernet) var fernet = require('../fernet');
 
-var assert = chai.assert;
+var assert = chai.assert
+chai.use(sinonChai);
 
 var testData = {
   "token": "gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==",
@@ -11,6 +14,13 @@ var testData = {
   "src": "hello",
   "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
 }
+
+var unacceptableClockSkewTestData = {
+  "token": "gAAAAAAdwStRAAECAwQFBgcICQoLDA0OD3HkMATM5lFqGaerZ-fWPAnja1xKYyhd-Y6mSkTOyTGJmw2Xc2a6kBd-iX9b_qXQcw==",
+  "now": "1985-10-26T01:20:01-07:00",
+  "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
+}
+
 
 suite('fernet.Token.prototype.decode', function(){
   var _fernet = new fernet({ttl: 0})
@@ -130,5 +140,22 @@ suite('fernet.Token.prototype.decode', function(){
     assert.throws(function(){
       token.decode();
     }, Error, 'Invalid Token: HMAC');
+  })
+
+  test('raises new Error("far-future timestamp") on unacceptable clock skew', function(){
+    var token = new fernet.Token({
+      secret: new fernet.Secret(unacceptableClockSkewTestData.secret),
+      token: unacceptableClockSkewTestData.token,
+      ttl: 0
+    })
+
+    clock = sinon.useFakeTimers(new Date(Date.parse(unacceptableClockSkewTestData.now)).getTime());
+
+    assert.throws(function(){
+      token.decode();
+    }, Error, 'far-future timestamp');
+
+    clock.restore();
+
   })
 })
