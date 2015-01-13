@@ -172,6 +172,7 @@ module = module.exports = function(parent){
     this.token      = opts.token;
     this.version    = opts.version || fernet.parseHex(parent.versionHex);
     this.optsIV     = opts.iv;
+    this.maxClockSkew  = 60;
     if(opts.time) this.setTime(Date.parse(opts.time));
     else this.setTime();
   }
@@ -217,11 +218,17 @@ module = module.exports = function(parent){
 
       this.time     = new Date(timeInt * 1000);
 
-      var timeDiff = ((new Date()) - this.time) / 1000;
+      var currentTime = new Date()
+      var timeDiff = (currentTime - this.time) / 1000;
 
       if(this.ttl > 0 && timeDiff > this.ttl) {
         throw new Error("Invalid Token: TTL");
       }
+
+      if(((currentTime / 1000) + this.maxClockSkew) < timeInt){
+        throw new Error("far-future timestamp");
+      }
+
       this.ivHex    = tokenString.slice(timeOffset, ivOffset);
       this.iv       = fernet.Hex.parse(this.ivHex);
       this.cipherTextHex = tokenString.slice(ivOffset, hmacOffset);
@@ -245,8 +252,6 @@ module = module.exports = function(parent){
 }
 
 //exports = module.exports = Token;
-
-
 
 },{"../fernet":1}],4:[function(require,module,exports){
 // UTILITY
