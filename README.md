@@ -9,7 +9,7 @@ Fernet.js uses browserify to provide a library that works
 in both node and the browser.
 
 Instead of using TypedArrays I use Hex Strings and CryptoJS's `Hex.parse`
-to build up `CryptoJs.lib.WordArray` objects.  
+to build up `CryptoJs.lib.WordArray` objects.
 
 ## WARNING
 
@@ -18,7 +18,7 @@ to build up `CryptoJs.lib.WordArray` objects.
 However, you can use this library to encrypt/decrypt data server-side and decrypt data on a client.
 
 That being said, the only randomness used by this library without your control is a call to `crypto.randomBytes` to generate IVs.
-This function defaults to OpenSSL server-side and [browserify's random number generator implementation](https://github.com/dominictarr/crypto-browserify/blob/master/rng.js) 
+This function defaults to OpenSSL server-side and [browserify's random number generator implementation](https://github.com/crypto-browserify/crypto-browserify/blob/master/index.js)
 client-side.  The browserify implementation only uses real browser crypto or throws an error. (IE: no calls to `Math.random()`)
 
 If you're planning on generating the secrets in the browser do yourself a favor and get an audit.
