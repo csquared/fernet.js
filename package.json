@@ -1,6 +1,6 @@
 {
   "name": "fernet",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Javascript implementation of Fernet symmetric encryption https://github.com/kr/fernet-spec",
   "main": "fernet.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "crypto-js": "~3.1.2-1",
-    "urlsafe-base64": "0.0.2"
+    "urlsafe-base64": "1.0.0"
   },
   "devDependencies": {
     "browserify": "~2.29.1",
