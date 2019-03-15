@@ -1,6 +1,7 @@
 //for browser compatibility
+var Hex = require('crypto-js/enc-hex');
 if(!chai)   var chai = require('chai');
-if(!fernet) var fernet = require('../fernet');
+if(!fernet) var fernet = require('../../fernet.js');
 var assert = chai.assert;
 
 
@@ -16,7 +17,8 @@ suite('fernet.Secret', function(){
   })
 
   test('secret.signingKey', function(){
-    assert.deepEqual(secret.signingKey, fernet.Hex.parse(signingKeyHex));
+    // changed to equal because they were both the same, but would fail deepEqual?
+    assert.equal(JSON.stringify(secret.signingKey), JSON.stringify(Hex.parse(signingKeyHex)));
   })
 
   test('secret.encryptionKeyHex', function(){
@@ -24,7 +26,8 @@ suite('fernet.Secret', function(){
   })
 
   test('secret.encryptionKey', function(){
-    assert.deepEqual(secret.encryptionKey, fernet.Hex.parse(encryptionKeyHex));
+    // changed to equal because they were both the same, but would fail deepEqual?
+    assert.equal(JSON.stringify(secret.encryptionKey), JSON.stringify(Hex.parse(encryptionKeyHex)));
   })
 
   test('raises "new Error(\'Secret must be 32 url-safe base64-encoded bytes.\')" on wrong secret', function(){

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>Fernet.js</h1><p><strong>This is forked from <a href="https://github.com/csquared/fernet.js">fernet.js</a> and has been modified for better es6 support</strong></p>
+<p>Javascript implementation of <a href="https://github.com/kr/fernet-spec">Fernet symmetric encryption</a>.</p>
+<p>Fernet is an opinionated way of using AES and HMAC authentication that makes
+shared-secret symmetric encryption simpler for communicating applications.</p>
+<p>Fernet.js uses browserify to provide a library that works
+in both node and the browser.</p>
+<p>Instead of using TypedArrays I use Hex Strings and CryptoJS's <code>Hex.parse</code>
+to build up <code>CryptoJs.lib.WordArray</code> objects.</p>
+<h2>WARNING</h2><p><a href="http://www.matasano.com/articles/javascript-cryptography/">It's generally <em>never</em> considered safe to encrypt data in the browser.</a></p>
+<p>However, you can use this library to encrypt/decrypt data server-side and decrypt data on a client.</p>
+<p>That being said, the only randomness used by this library without your control is a call to <code>crypto.randomBytes</code> to generate IVs.
+This function defaults to OpenSSL server-side and <a href="https://github.com/crypto-browserify/crypto-browserify/blob/master/index.js">browserify's random number generator implementation</a>
+client-side.  The browserify implementation only uses real browser crypto or throws an error. (IE: no calls to <code>Math.random()</code>)</p>
+<p>If you're planning on generating the secrets in the browser do yourself a favor and get an audit.</p>
+<h2>Usage</h2><h3>node.js (use <code>Token</code> and <code>Secret</code> directly)</h3><pre class="prettyprint source lang-js"><code>import { Token, Secret } from 'fernet';</code></pre><h2>Using Fernet in <code>es6</code></h2><h3>set top level properties by modifying the <code>defaults</code> object.</h3><pre class="prettyprint source lang-js"><code>import { defaults, Secret } from 'fernet';
+
+// set secret
+defaults.secret = new Secret(&quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;);</code></pre><p>Or can use the <code>setSecret</code> function to modify the global <code>defaults</code>:</p>
+<pre class="prettyprint source lang-js"><code>import { setSecret } from 'fernet';
+
+setSecret(&quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;);</code></pre><p>Sets the <code>secret</code> at the top level (<code>defaults</code> object) for all further Tokens made.</p>
+<pre class="prettyprint source lang-js"><code>import { defaults } from 'fernet';
+
+defaults.ttl = seconds;  //seconds is number of seconds</code></pre><p>Sets the <code>ttl</code> at the top level (<code>defaults</code> object) for all further Tokens made.</p>
+<h2>Secret</h2><h3>Generating a secret</h3><pre class="prettyprint source"><code>Generating appropriate secrets is beyond the scope of `Fernet`, but you should
+generate it using `/dev/random` in a *nix. To generate a base64-encoded 256 bit
+(32 byte) random sequence, try:
+
+dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64</code></pre><h3>new Secret(string)</h3><pre class="prettyprint source lang-javascript"><code>import { Secret } from 'fernet';
+
+const secret = new Secret(&quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;);
+/*
+  {
+    signingKeyHex: '730ff4c7af3d46923e8ed451ee813c87',
+    signingKey: [CryptoJS.lib.WordArray],
+    encryptionKeyHex: 'f790b0a226bc96a92de49b5e9c05e1ee',
+    encryptionKey: [CryptoJS.lib.WordArray]
+  }
+*/</code></pre><h2>Token</h2><h2>new Token(options)</h2><p>Options:</p>
+<ul>
+<li><code>secret</code>: a <code>Secret</code> object</li>
+<li><code>token</code>: a Fernet-encoded String</li>
+<li><code>ttl</code>: seconds of ttl</li>
+</ul>
+<p>For testing:</p>
+<ul>
+<li><code>time</code>: Date object</li>
+<li><code>iv</code>: Array of Integers</li>
+</ul>
+<h3>full Token.encode example</h3><pre class="prettyprint source lang-javascript"><code>import { Token, Secret } from 'fernet';
+
+// before creating a token, we must have a Secret()
+const secret = new Secret(&quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;);
+
+//Have to include time and iv to make it deterministic.
+//Normally time would default to (new Date()) and iv to something random.
+const token = new Token({
+  secret: secret,
+  time: Date.parse(1),
+  iv: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+})
+token.encode(&quot;Message&quot;) // returns the encypted message
+/*
+'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg=='
+*/</code></pre><h3>Token.decode example</h3><p>Include tt</p>
+<pre class="prettyprint source lang-js"><code>import { Token, Secret } from 'fernet';
+
+// must use same secret that encoded the token
+const secret = new Secret(&quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;);
+
+const token = new Token({
+  secret: secret,
+  token: 'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg==',
+  ttl: 0
+})
+token.decode();</code></pre><h1>The Fernet Instance (Legacy)</h1><p><em>the code below uses the <code>fernet</code> instance, which is how the old <code>fernet</code> module worked.  However, this can still be useful in es6 as you can create scoped instances that share options such as the <code>secret</code> and <code>ttl</code>.</em></p>
+<h3>get a <code>fernet</code> instance</h3><pre class="prettyprint source lang-js"><code>import { fernet } from 'fernet';
+
+// set options
+const f = new fernet({
+  ttl: 0,
+  secret: &quot;cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=&quot;
+})
+
+const token = f.Token() // uses token scoped to the options set in this fernet instance (`f`)
+
+// ecnrypt message
+const encrypted = token.encode('hello world');
+
+// decrypt message
+const decrypted = token.decode(encrypted);</code></pre><h3>fernet.setSecret(string)</h3><p>Sets the <code>secret</code> at the top level for all further Tokens made
+from this instance of Fernet.</p>
+<h3>fernet.ttl = seconds</h3><p>Sets the <code>ttl</code> at the top level for all further Tokens made
+from this instance of Fernet.</p>
+<h2>Test</h2><pre class="prettyprint source"><code>> npm test</code></pre><p>tests node lib with <code>mocha</code>.</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#fernet">fernet</a></li><li><a href="Secret.html">Secret</a></li><li><a href="Token.html">Token</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ArrayToHex">ArrayToHex</a></li><li><a href="global.html#createHmac">createHmac</a></li><li><a href="global.html#createToken">createToken</a></li><li><a href="global.html#decode64toHex">decode64toHex</a></li><li><a href="global.html#decryptMessage">decryptMessage</a></li><li><a href="global.html#encryptMessage">encryptMessage</a></li><li><a href="global.html#hexBits">hexBits</a></li><li><a href="global.html#lpad">lpad</a></li><li><a href="global.html#parseHex">parseHex</a></li><li><a href="global.html#randomHex">randomHex</a></li><li><a href="global.html#setIV">setIV</a></li><li><a href="global.html#setSecret">setSecret</a></li><li><a href="global.html#timeBytes">timeBytes</a></li><li><a href="global.html#urlsafe">urlsafe</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Mar 15 2019 12:45:03 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
