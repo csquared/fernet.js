@@ -1,6 +1,6 @@
 //for browser compatibility
 if(!chai)   var chai = require('chai');
-if(!fernet) var fernet = require('../fernet');
+if(!fernet) var fernet = require('../../fernet.js');
 
 var assert = chai.assert;
 

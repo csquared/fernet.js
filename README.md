@@ -23,19 +23,140 @@ client-side.  The browserify implementation only uses real browser crypto or thr
 
 If you're planning on generating the secrets in the browser do yourself a favor and get an audit.
 
-## Use
+## Usage
 
-### node.js
+### node.js (use `Token` and `Secret` directly)
+```js
+import { Token, Secret } from 'fernet';
+```
+
+## Using Fernet in `es6`
+
+### set top level properties by modifying the `defaults` object.
+```js
+import { defaults, Secret } from 'fernet';
+
+// set secret
+defaults.secret = new Secret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
+```
+
+Or can use the `setSecret` function to modify the global `defaults`:
+
+```js
+import { setSecret } from 'fernet';
+
+setSecret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
+```
+
+Sets the `secret` at the top level (`defaults` object) for all further Tokens made.
+
+```js
+import { defaults } from 'fernet';
+
+defaults.ttl = seconds;  //seconds is number of seconds
+```
+Sets the `ttl` at the top level (`defaults` object) for all further Tokens made.
+
+
+## Secret
+### Generating a secret
+
+    Generating appropriate secrets is beyond the scope of `Fernet`, but you should
+    generate it using `/dev/random` in a *nix. To generate a base64-encoded 256 bit
+    (32 byte) random sequence, try:
+
+    dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64
+
+### new Secret(string)
+
 ```javascript
-var fernet = require('./fernet');
+import { Secret } from 'fernet';
+
+const secret = new Secret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
+/*
+  {
+    signingKeyHex: '730ff4c7af3d46923e8ed451ee813c87',
+    signingKey: [CryptoJS.lib.WordArray],
+    encryptionKeyHex: 'f790b0a226bc96a92de49b5e9c05e1ee',
+    encryptionKey: [CryptoJS.lib.WordArray]
+  }
+*/
 ```
 
-### browser
-```html
-<script src="fernetBrowser.js"></script>
+## Token
+
+## new Token(options)
+
+Options:
+
+- `secret`: a `Secret` object
+- `token`: a Fernet-encoded String
+- `ttl`: seconds of ttl
+
+For testing:
+
+- `time`: Date object
+- `iv`: Array of Integers
+
+### full Token.encode example
+```javascript
+import { Token, Secret } from 'fernet';
+
+// before creating a token, we must have a Secret()
+const secret = new Secret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
+
+//Have to include time and iv to make it deterministic.
+//Normally time would default to (new Date()) and iv to something random.
+const token = new Token({
+  secret: secret,
+  time: Date.parse(1),
+  iv: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+})
+token.encode("Message") // returns the encypted message
+/*
+'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg=='
+*/
 ```
 
-## Fernet
+### Token.decode example
+Include tt
+```js
+import { Token, Secret } from 'fernet';
+
+// must use same secret that encoded the token
+const secret = new Secret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
+
+const token = new Token({
+  secret: secret,
+  token: 'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg==',
+  ttl: 0
+})
+token.decode();
+```
+
+
+# The Fernet Instance (Legacy)
+
+*the code below uses the `fernet` instance, which is how the old `fernet` module worked.  However, this can still be useful in es6 as you can create scoped instances that share options such as the `secret` and `ttl`.*
+
+### get a `fernet` instance
+```js
+import { fernet } from 'fernet';
+
+// set options
+const f = new fernet({
+  ttl: 0,
+  secret: "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
+})
+
+const token = f.Token() // uses token scoped to the options set in this fernet instance (`f`)
+
+// ecnrypt message
+const encrypted = token.encode('hello world');
+
+// decrypt message
+const decrypted = token.decode(encrypted);
+```
 
 ### fernet.setSecret(string)
 
@@ -47,78 +168,8 @@ from this instance of Fernet.
 Sets the `ttl` at the top level for all further Tokens made
 from this instance of Fernet.
 
-## Secret
-
-### Generating a secret
-
-    Generating appropriate secrets is beyond the scope of `Fernet`, but you should
-    generate it using `/dev/random` in a *nix. To generate a base64-encoded 256 bit
-    (32 byte) random sequence, try:
-
-    dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64
-
-### new fernet.Secret(string)
-
-```javascript
-  var secret = new fernet.Secret("cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4=");
-  /*
-    {
-      signingKeyHex: '730ff4c7af3d46923e8ed451ee813c87',
-      signingKey: [CryptoJS.lib.WordArray],
-      encryptionKeyHex: 'f790b0a226bc96a92de49b5e9c05e1ee',
-      encryptionKey: [CryptoJS.lib.WordArray]
-    }
-  */
-```
-
-## Token
-
-## new fernet.Token(options)
-
-Options:
-
-- `secret`: a `fernet.Secret` object
-- `token`: a Fernet-encoded String
-- `ttl`: seconds of ttl
-
-For testing:
-
-- `time`: Date object
-- `iv`: Array of Integers
-
-### Token.prototype.encode
-```javascript
-//Have to include time and iv to make it deterministic.
-//Normally time would default to (new Date()) and iv to something random.
-var token = new fernet.Token({
-  secret: secret,
-  time: Date.parse(1),
-  iv: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-})
-token.encode("Message")
-/*
-'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg=='
-*/
-```
-
-### Token.prototype.decode
-Include tt
-```javascript
-var token = new fernet.Token({
-  secret: secret,
-  token: 'gAAAAABSO_yhAAECAwQFBgcICQoLDA0OD1PGoFV6wgWZG6AOBfQqevwJT2qKtCZ0EjKy1_TvyxTseR_3ebIF6Ph-xa2QT_tEvg==',
-  ttl: 0
-})
-token.decode();
-
-/*
-"Message"
-*/
-```
-
 ## Test
 
     > npm test
 
-Compiles new fernetBrowser.js via `browserify`,
-tests node lib with `mocha`, then opens test.html via `open`.
+tests node lib with `mocha`.

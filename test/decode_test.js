@@ -1,11 +1,11 @@
 //for browser compatibility
-if(!chai)   var chai = require('chai');
-if(!sinon)  var sinon = require("sinon");
-if(!sinonChai) var sinonChai = require("sinon-chai");
-if(!fernet) var fernet = require('../fernet');
+if(!chai) var chai = require('chai');
+if(!sinon) var sinon = require("sinon");
+// if(!sinonChai) var sinonChai = require("sinon-chai"); // this is breaking the tests?
+if(!fernet) var fernet = require('../../fernet.js');
 
 var assert = chai.assert
-chai.use(sinonChai);
+// chai.use(sinonChai);
 
 var testData = {
   "token": "gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==",
@@ -23,11 +23,11 @@ var unacceptableClockSkewTestData = {
 
 
 suite('fernet.Token.prototype.decode', function(){
-  var _fernet = new fernet({ttl: 0})
+  fernet.defaults.ttl = 0;
   var secret  = new fernet.Secret(testData.secret);
 
   test("decode()", function(){
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -37,20 +37,24 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test("decode(token)", function(){
-    var token = new _fernet.Token({secret: secret})
+    var token = new fernet.Token({secret: secret})
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
   })
 
   test("decode(token) with top-level secret", function(){
-    var f = new fernet({secret: testData.secret, ttl: 0})
+    var f = new fernet.fernet({secret: testData.secret, ttl: 0})
+    // can also do this via the defaults as shown below:
+    // fernet.defaults.ttl = 0;
+    // fernet.defaults.secret = new fernet.Secret(testData.secret);
+    // var token = new fernet.Token()
     var token = new f.Token()
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
   })
 
   test('recovers version', function(){
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token,
       version: 1
@@ -61,7 +65,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers time', function(){
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -71,7 +75,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers iv', function(){
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -81,7 +85,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('recovers hmac', function(){
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token
     })
@@ -91,10 +95,10 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('inherits parent TTL', function(){
-    var f     = new fernet({ttl: 1});
-    var token = new f.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: testData.token,
+      ttl: 1 // set ttl here, as 
     })
 
     assert.throws(function(){
@@ -103,6 +107,7 @@ suite('fernet.Token.prototype.decode', function(){
   })
 
   test('raises new Error("Invalid Token: TTL") on invalid ttl', function(){
+
     var token = new fernet.Token({
       secret: secret,
       token: testData.token,
@@ -120,7 +125,7 @@ suite('fernet.Token.prototype.decode', function(){
     var dirtyToken = '01' + tokenHex.slice(versionOffset);
     var tokenWords = fernet.Hex.parse(dirtyToken);
     var token = fernet.urlsafe(tokenWords.toString(fernet.Base64));
-    var t = new _fernet.Token({secret: secret})
+    var t = new fernet.Token({secret: secret})
 
     assert.throws(function(){
       t.decode(token);
@@ -132,7 +137,7 @@ suite('fernet.Token.prototype.decode', function(){
     var i = s.length - 5;
     var mutation = String.fromCharCode(s.charCodeAt(i) + 1);
     var dirtyHmacString = s.slice(0,i) + mutation + s.slice(i+1);
-    var token = new _fernet.Token({
+    var token = new fernet.Token({
       secret: secret,
       token: dirtyHmacString
     })

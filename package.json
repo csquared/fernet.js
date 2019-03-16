@@ -2,11 +2,14 @@
   "name": "fernet",
   "version": "0.3.1",
   "description": "Javascript implementation of Fernet symmetric encryption https://github.com/kr/fernet-spec",
-  "main": "fernet.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "pretest": "browserify -s fernet fernet.js > fernetBrowser.js",
+    "pretest": "browserify -s fernet ./dist/index.js > fernetBrowser.js",
     "test": "mocha",
-    "posttest": "open test.html"
+    "posttest": "npm run open",
+    "build": "rollup -c ./rollup.config.js",
+    "build-help": "jsdoc -c ./jsdoc.json -d ./docs --readme ./README.md",
+    "open": "concurrently \"http-server -a localhost -p 1234\" \"start http://localhost:1234/test\""
   },
   "keywords": [
     "encryption",
@@ -16,14 +19,33 @@
   "author": "csquared",
   "license": "MIT",
   "dependencies": {
+    "crypto": "^1.0.1",
     "crypto-js": "~3.1.2-1",
     "urlsafe-base64": "1.0.0"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
     "browserify": "~2.29.1",
     "buffer-browserify": "~0.2.2",
-    "mocha": "*",
     "chai": "*",
+    "concurrently": "^4.1.0",
+    "http-server": "^0.11.1",
+    "jsdoc": "*",
+    "mocha": "*",
+    "rollup": "^0.62.0",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-commonjs": "^9.1.3",
+    "rollup-plugin-json": "^3.0.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-uglify": "^4.0.0",
     "sinon": "*",
     "sinon-chai": "*"
   }
