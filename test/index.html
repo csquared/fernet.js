@@ -6,11 +6,15 @@
 </head>
 <body>
   <div id="mocha"></div>
-  <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
   <script src="../node_modules/mocha/mocha.js"></script>
+  <!-- <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/sinon-chai/lib/sinon-chai.js"></script>
+  <script src="../node_modules/sinon/pkg/sinon.js"></script> -->
   <script>mocha.setup('tdd')</script>
-  <script src="http://chaijs.com/chai.js"></script>
-  <script src="../dist/index.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/sinon-chai/lib/sinon-chai.js"></script>
+  <script src="../node_modules/sinon/pkg/sinon.js"></script>
+  <script src="../fernetBrowser.js"></script>
   <script src="./encode_test.js"></script>
   <script src="./decode_test.js"></script>
   <script src="./secret_test.js"></script>

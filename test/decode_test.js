@@ -1,12 +1,11 @@
 //for browser compatibility
-var Hex = require('crypto-js/enc-hex');
-if(!chai)   var chai = require('chai');
-if(!sinon)  var sinon = require("sinon");
-if(!sinonChai) var sinonChai = require("sinon-chai");
+if(!chai) var chai = require('chai');
+if(!sinon) var sinon = require("sinon");
+// if(!sinonChai) var sinonChai = require("sinon-chai"); // this is breaking the tests?
 if(!fernet) var fernet = require('../../fernet.js');
 
 var assert = chai.assert
-chai.use(sinonChai);
+// chai.use(sinonChai);
 
 var testData = {
   "token": "gAAAAAAdwJ6wAAECAwQFBgcICQoLDA0ODy021cpGVWKZ_eEwCGM4BLLF_5CV9dOPmrhuVUPgJobwOz7JcbmrR64jVmpU4IwqDA==",
@@ -124,7 +123,7 @@ suite('fernet.Token.prototype.decode', function(){
     var tokenHex = fernet.decode64toHex(testData.token);
     var versionOffset = fernet.hexBits(8);
     var dirtyToken = '01' + tokenHex.slice(versionOffset);
-    var tokenWords = Hex.parse(dirtyToken);
+    var tokenWords = fernet.Hex.parse(dirtyToken);
     var token = fernet.urlsafe(tokenWords.toString(fernet.Base64));
     var t = new fernet.Token({secret: secret})
 

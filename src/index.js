@@ -60,7 +60,7 @@ function hexBits(bits){
  */
 function decode64toHex(string){
   const s = URLBase64.decode(string.replace(/=+$/, ''));
-  return (new Buffer.from(s)).toString('hex');
+  return (new Buffer(s)).toString('hex');
 }
 
 /**
@@ -324,7 +324,7 @@ class Token {
  */
 
 /**
-*  below `fernet` wrapper does not really make sense to use in es6, only implemented here for legacy support.
+*  below `fernet` wrapper may not really make sense to use in es6, only implemented here for legacy support.
 * This seems redundant as you can just `import { Token, Secret } from 'fernet'` in es6 and initialize the token with whatever options you want, or you can simply use the `defaults` for top level/global config of tokens.
 */ 
 
@@ -349,6 +349,7 @@ function fernet(opts=null){
     this.secret = new Secret(opts.secret);
   }
   const scopeThis = this;
+
   this.Token = ()=>{
     return new Token(scopeThis);
   }
@@ -365,6 +366,19 @@ function fernet(opts=null){
   this.createHmac = createHmac;
 }
 
-export { defaults, Secret, Token, fernet, setSecret, ArrayToHex, timeBytes, decode64toHex, createHmac, hexBits, urlsafe };
+export { 
+  defaults, 
+  Secret, 
+  Token, 
+  fernet, 
+  setSecret,
+  ArrayToHex, 
+  timeBytes, 
+  decode64toHex, 
+  createHmac, 
+  hexBits, 
+  urlsafe, 
+  Hex 
+};
 
 
