@@ -348,10 +348,9 @@ function fernet(opts=null){
   if (opts.secret){
     this.secret = new Secret(opts.secret);
   }
-  const scopeThis = this;
 
   this.Token = ()=>{
-    return new Token(scopeThis);
+    return new Token(this);
   }
 
   this.setSecret = (secret64)=> {
