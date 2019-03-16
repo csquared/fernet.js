@@ -1,7 +1,5 @@
 # Fernet.js
 
-**This is forked from [fernet.js](https://github.com/csquared/fernet.js) and has been modified for better es6 support**
-
 Javascript implementation of <a href="https://github.com/kr/fernet-spec">Fernet symmetric encryption</a>.
 
 Fernet is an opinionated way of using AES and HMAC authentication that makes
