@@ -1,8 +1,8 @@
 //for browser compatibility
-if(!chai)   var chai = require('chai');
-if(!sinon)  var sinon = require("sinon");
-if(!sinonChai) var sinonChai = require("sinon-chai");
-if(!fernet) var fernet = require('../fernet');
+if (!chai) var chai = require('chai');
+if (!sinon) var sinon = require("sinon");
+if (!sinonChai) var sinonChai = require("sinon-chai");
+if (!fernet) var fernet = require('../fernet');
 
 var assert = chai.assert
 chai.use(sinonChai);
@@ -22,11 +22,11 @@ var unacceptableClockSkewTestData = {
 }
 
 
-suite('fernet.Token.prototype.decode', function(){
-  var _fernet = new fernet({ttl: 0})
-  var secret  = new fernet.Secret(testData.secret);
+suite('fernet.Token.prototype.decode', function () {
+  var _fernet = new fernet({ ttl: 0 })
+  var secret = new fernet.Secret(testData.secret);
 
-  test("decode()", function(){
+  test("decode()", function () {
     var token = new _fernet.Token({
       secret: secret,
       token: testData.token
@@ -36,20 +36,20 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal("hello", token.toString())
   })
 
-  test("decode(token)", function(){
-    var token = new _fernet.Token({secret: secret})
+  test("decode(token)", function () {
+    var token = new _fernet.Token({ secret: secret })
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
   })
 
-  test("decode(token) with top-level secret", function(){
-    var f = new fernet({secret: testData.secret, ttl: 0})
+  test("decode(token) with top-level secret", function () {
+    var f = new fernet({ secret: testData.secret, ttl: 0 })
     var token = new f.Token()
     assert.equal("hello", token.decode(testData.token))
     assert.equal("hello", token.toString())
   })
 
-  test('recovers version', function(){
+  test('recovers version', function () {
     var token = new _fernet.Token({
       secret: secret,
       token: testData.token,
@@ -60,7 +60,7 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal(token.version, 128);
   })
 
-  test('recovers time', function(){
+  test('recovers time', function () {
     var token = new _fernet.Token({
       secret: secret,
       token: testData.token
@@ -70,7 +70,7 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal(token.time.toUTCString(), now.toUTCString());
   })
 
-  test('recovers iv', function(){
+  test('recovers iv', function () {
     var token = new _fernet.Token({
       secret: secret,
       token: testData.token
@@ -80,7 +80,7 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal(token.ivHex, ivHex);
   })
 
-  test('recovers hmac', function(){
+  test('recovers hmac', function () {
     var token = new _fernet.Token({
       secret: secret,
       token: testData.token
@@ -90,68 +90,68 @@ suite('fernet.Token.prototype.decode', function(){
     assert.equal(token.hmacHex, computedHmac.toString(fernet.Hex));
   })
 
-  test('inherits parent TTL', function(){
-    var f     = new fernet({ttl: 1});
+  test('inherits parent TTL', function () {
+    var f = new fernet({ ttl: 1 });
     var token = new f.Token({
       secret: secret,
       token: testData.token,
     })
 
-    assert.throws(function(){
+    assert.throws(function () {
       token.decode();
     }, Error, 'Invalid Token: TTL');
   })
 
-  test('raises new Error("Invalid Token: TTL") on invalid ttl', function(){
+  test('raises new Error("Invalid Token: TTL") on invalid ttl', function () {
     var token = new fernet.Token({
       secret: secret,
       token: testData.token,
       ttl: 1
     })
 
-    assert.throws(function(){
+    assert.throws(function () {
       token.decode();
     }, Error, 'Invalid Token: TTL');
   })
 
-  test('raises new Error("Invalid version") on wrong version byte', function(){
+  test('raises new Error("Invalid version") on wrong version byte', function () {
     var tokenHex = fernet.decode64toHex(testData.token);
     var versionOffset = fernet.hexBits(8);
     var dirtyToken = '01' + tokenHex.slice(versionOffset);
     var tokenWords = fernet.Hex.parse(dirtyToken);
     var token = fernet.urlsafe(tokenWords.toString(fernet.Base64));
-    var t = new _fernet.Token({secret: secret})
+    var t = new _fernet.Token({ secret: secret })
 
-    assert.throws(function(){
+    assert.throws(function () {
       t.decode(token);
     }, Error, 'Invalid version');
   })
 
-  test('raises new Error("Invalid Token: HMAC") on wrong Hmac', function(){
+  test('raises new Error("Invalid Token: HMAC") on wrong Hmac', function () {
     var s = testData.token;
     var i = s.length - 5;
     var mutation = String.fromCharCode(s.charCodeAt(i) + 1);
-    var dirtyHmacString = s.slice(0,i) + mutation + s.slice(i+1);
+    var dirtyHmacString = s.slice(0, i) + mutation + s.slice(i + 1);
     var token = new _fernet.Token({
       secret: secret,
       token: dirtyHmacString
     })
 
-    assert.throws(function(){
+    assert.throws(function () {
       token.decode();
     }, Error, 'Invalid Token: HMAC');
   })
 
-  test('raises new Error("far-future timestamp") on unacceptable clock skew', function(){
+  test('raises new Error("far-future timestamp") on unacceptable clock skew', function () {
     var token = new fernet.Token({
       secret: new fernet.Secret(unacceptableClockSkewTestData.secret),
       token: unacceptableClockSkewTestData.token,
-      ttl: 0
+      ttl: 1
     })
 
     clock = sinon.useFakeTimers(new Date(Date.parse(unacceptableClockSkewTestData.now)).getTime());
 
-    assert.throws(function(){
+    assert.throws(function () {
       token.decode();
     }, Error, 'far-future timestamp');
 

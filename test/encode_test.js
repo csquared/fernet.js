@@ -1,6 +1,6 @@
 //for browser compatibility
-if(!chai)   var chai = require('chai');
-if(!fernet) var fernet = require('../fernet');
+if (!chai) var chai = require('chai');
+if (!fernet) var fernet = require('../fernet');
 
 var assert = chai.assert;
 
@@ -12,18 +12,18 @@ var testData = {
   "secret": "cw_0x689RpI-jtRR7oE8h_eQsKImvJapLeSbXpwF4e4="
 }
 
-suite('fernet.Token', function(){
-  test('contains a version', function(){
+suite('fernet.Token', function () {
+  test('contains a version', function () {
     var token = new fernet.Token()
     assert.equal(128, token.version)
   })
 })
 
 
-suite('fernet.Token.prototype.encode', function(){
+suite('fernet.Token.prototype.encode', function () {
   var secret = new fernet.Secret(testData.secret);
 
-  test("encode(message)", function(){
+  test("encode(message)", function () {
     var token = new fernet.Token({
       secret: secret,
       iv: testData.iv,
@@ -33,7 +33,7 @@ suite('fernet.Token.prototype.encode', function(){
     assert.equal(testData.token, token.toString());
   })
 
-  test("token.encode() makes token.toString() return the token", function(){
+  test("token.encode() makes token.toString() return the token", function () {
     var token = new fernet.Token({
       secret: secret,
       iv: testData.iv,
@@ -44,7 +44,7 @@ suite('fernet.Token.prototype.encode', function(){
     assert.equal(testData.token, token.toString());
   })
 
-  test("encode() returns the token as a String", function(){
+  test("encode() returns the token as a String", function () {
     var token = new fernet.Token({
       secret: secret,
       iv: testData.iv,
@@ -53,7 +53,7 @@ suite('fernet.Token.prototype.encode', function(){
     assert.equal(token.encode(testData.src), testData.token);
   })
 
-  test("randomly generates IV if one is not passed in", function(){
+  test("randomly generates IV if one is not passed in", function () {
     var token = new fernet.Token({
       secret: secret,
       time: testData.now
@@ -64,7 +64,7 @@ suite('fernet.Token.prototype.encode', function(){
     assert.notEqual(tokenString, tokenString2);
   })
 
-  test('time defaults to Date.now()', function(){
+  test('time defaults to Date.now()', function () {
     var token = new fernet.Token({
       secret: secret
     })
