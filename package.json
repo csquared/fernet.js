@@ -15,7 +15,7 @@
   "author": "csquared",
   "license": "MIT",
   "dependencies": {
-    "crypto-js": "~3.1.2-1",
+    "crypto-js": "~4.2.0",
     "urlsafe-base64": "1.0.0"
   },
   "devDependencies": {
