@@ -1,5 +1,7 @@
 # Fernet.js
 
+![ci status](https://github.com/csquared/fernet.js/actions/workflows/node.js.yml/badge.svg?branch=master)
+
 Javascript implementation of <a href="https://github.com/kr/fernet-spec">Fernet symmetric encryption</a>.
 
 Fernet is an opinionated way of using AES and HMAC authentication that makes
