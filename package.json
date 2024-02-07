@@ -6,7 +6,6 @@
   "scripts": {
     "pretest": "browserify -s fernet fernet.js > fernetBrowser.js",
     "test": "mocha",
-    "posttest": "command -v open && open test.html"
   },
   "keywords": [
     "encryption",
