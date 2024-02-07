@@ -5,7 +5,7 @@
   "main": "fernet.js",
   "scripts": {
     "pretest": "browserify -s fernet fernet.js > fernetBrowser.js",
-    "test": "mocha",
+    "test": "mocha"
   },
   "keywords": [
     "encryption",
