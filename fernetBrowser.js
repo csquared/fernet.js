@@ -48,7 +48,7 @@ var ArrayToHex = function ArrayToHex(array) {
 }
 
 var randomHex = function (size) {
-  return crypto.randomBytes(128 / 8).toString('hex')
+  return crypto.randomBytes(size).toString('hex')
 }
 
 var setIV = function setIV(iv_array) {
