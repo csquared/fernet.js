@@ -19,10 +19,10 @@
     "urlsafe-base64": "1.0.0"
   },
   "devDependencies": {
-    "browserify": "~2.29.1",
+    "browserify": "^17.0.1",
     "buffer-browserify": "~0.2.2",
-    "mocha": "*",
     "chai": "*",
+    "mocha": "*",
     "sinon": "*",
     "sinon-chai": "*"
   }
