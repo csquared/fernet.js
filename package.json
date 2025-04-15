@@ -21,9 +21,9 @@
   "devDependencies": {
     "browserify": "^17.0.1",
     "buffer-browserify": "~0.2.2",
-    "chai": "*",
-    "mocha": "*",
-    "sinon": "*",
-    "sinon-chai": "*"
+    "chai": "^4.5.0",
+    "mocha": "^10.8.2",
+    "sinon": "^18.0.1",
+    "sinon-chai": "^3.7.0"
   }
 }
