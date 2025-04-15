@@ -1,7 +1,7 @@
 // for browser compatibility
 if (!chai) var chai = require('chai');
 if (!sinon) var sinon = require("sinon");
-if (!sinonChai) var sinonChai = require("sinon-chai").default;
+if (!sinonChai) var sinonChai = require("sinon-chai");
 if (!fernet) var fernet = require('../fernet');
 
 var assert = chai.assert
