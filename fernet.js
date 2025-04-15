@@ -33,7 +33,7 @@ var hexBits = function hexBits(bits) {
 // convert base64 string to hex string
 var decode64toHex = function decode64(string) {
   var s = URLBase64.decode(string.replace(/=+$/, ''));
-  return (new Buffer(s)).toString('hex');
+  return (new Buffer.from(s)).toString('hex');
 }
 
 // convert array to hex string
