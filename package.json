@@ -1,10 +1,9 @@
 {
   "name": "fernet",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Javascript implementation of Fernet symmetric encryption https://github.com/kr/fernet-spec",
   "main": "fernet.js",
   "scripts": {
-    "pretest": "browserify -s fernet fernet.js > fernetBrowser.js",
     "test": "mocha"
   },
   "keywords": [
